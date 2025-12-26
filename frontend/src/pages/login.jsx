@@ -5,7 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
 
-const Login = () => {
+const Login = ({ setIsAuthenticated }) => {  // Added setIsAuthenticated as a prop
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -30,12 +30,14 @@ const Login = () => {
       const response = await axios.post('http://localhost:8000/api/auth/login', formData, {
         withCredentials: true
       });
-      
-      if (response.status === 200) {
+
+      if (response.data && response.data.token) {
+        localStorage.setItem('token', response.data.token);
+        setIsAuthenticated(true);  // This updates the auth state in App.js
         toast.success('Login successful!');
-        navigate('/dashboard'); // Redirect to dashboard or home page
+        navigate('/dashboard');
       }
-      console.log(response)
+      
     } catch (error) {
       const errorMessage = error.response?.data?.message || 'An error occurred during login';
       toast.error(errorMessage);

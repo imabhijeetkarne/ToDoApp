@@ -6,6 +6,7 @@ dotenv.config();
 import connectDB from './config/db.js';
 import cookieParser from "cookie-parser"
 import authRouter from "./routes/auth.route.js"
+import taskRoutes from "./routes/task.route.js"
 
 let PORT = process.env.PORT || 8000;
 
@@ -14,15 +15,20 @@ let PORT = process.env.PORT || 8000;
 let app = express();
 
 // Middleware
-app.use(express.json());
-app.use(cookieParser())
+
 app.use(cors({
     origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-    credentials: true
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
+app.use(cookieParser())
+app.use(express.json());
+
 
 // Use routes
 app.use('/api/auth', authRouter);
+app.use('/api/tasks', taskRoutes);
 
 // Start the server
 app.listen(PORT, () => {

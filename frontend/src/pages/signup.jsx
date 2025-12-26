@@ -5,7 +5,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 
-const Signup = () => {
+const Signup = ({ setIsAuthenticated }) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -27,7 +27,7 @@ const Signup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Basic validation
     if (password !== confirmPassword) {
       toast.error('Passwords do not match');
@@ -41,29 +41,51 @@ const Signup = () => {
 
     try {
       setLoading(true);
-      const response = await axios.post('http://localhost:8000/api/auth/signup', {
-        name,
-        email,
-        password
-      }, {
-        withCredentials: true
-      });
+      const response = await axios.post('http://localhost:8000/api/auth/signup',
+        {
+          name: name.trim(),
+          email: email.trim().toLowerCase(),  // Ensure consistent email case
+          password: password
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          withCredentials: true
+        }
+      );
 
-      if (response.data) {
-        toast.success('Account created successfully! Redirecting...');
-        setTimeout(() => {
-          navigate('/login');
-        }, 2000);
+      if (response.status === 201) {
+        setIsAuthenticated(true);
+        toast.success('Account created successfully!');
+        navigate('/dashboard');
       }
-      console.log(response)
     } catch (error) {
-      const message = error.response?.data?.message || 'An error occurred during signup';
-      toast.error(message);
+      console.error('Full error object:', error);
+      if (error.response) {
+        // The request was made and the server responded with a status code
+        console.error('Response data:', error.response.data);
+        console.error('Response status:', error.response.status);
+        console.error('Response headers:', error.response.headers);
+
+        const message = error.response.data?.message ||
+          error.response.data?.error ||
+          JSON.stringify(error.response.data) ||
+          'An error occurred during signup';
+        toast.error(message);
+      } else if (error.request) {
+        // The request was made but no response was received
+        console.error('No response received:', error.request);
+        toast.error('No response from server. Please try again.');
+      } else {
+        // Something happened in setting up the request
+        console.error('Error:', error.message);
+        toast.error('An error occurred. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
   };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <motion.div
@@ -158,9 +180,8 @@ const Signup = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className={`w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors ${
-                  loading ? 'opacity-70 cursor-not-allowed' : ''
-                }`}
+                className={`w-full py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg transition-colors ${loading ? 'opacity-70 cursor-not-allowed' : ''
+                  }`}
               >
                 {loading ? 'Creating Account...' : 'Sign Up'}
               </button>
