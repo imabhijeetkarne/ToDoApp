@@ -25,6 +25,9 @@ const Login = ({ setIsAuthenticated }) => {  // Added setIsAuthenticated as a pr
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
+
+    // Debug logging
+    console.log('Submitting login with:', formData);
     
     try {
       const response = await axios.post('http://localhost:8000/api/auth/login', formData, {

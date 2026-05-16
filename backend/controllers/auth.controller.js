@@ -29,17 +29,25 @@ export const login = async (req, res) => {
     try {
         const { email, password } = req.body;
 
+        // Debug logging
+        console.log('Login attempt with email:', email);
+        console.log('Password provided:', password ? '***' : 'MISSING');
+
         // Check if user exists
         const user = await User.findOne({ email });
         if (!user) {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
 
+         console.log('User found:', user.email);
+
         // Check password
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
+
+        console.log('Password match successful');
 
         // Create token
         const token = jwt.sign(
